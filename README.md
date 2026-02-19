@@ -19,6 +19,7 @@ Envis scans your workspace recursively and checks `.env`, `.env.example`, and
   - create `.env.example` from `.env` keys
 - Shows per-key CodeLens reference counts in env files.
 - Supports `Find All References` for env keys in env files.
+- Adds syntax highlighting for env keys in `.env` and `.env.*` files.
 
 Envis compares both primary and variant pairs:
 

@@ -1,0 +1,75 @@
+{
+  "name": "Envis Dotenv",
+  "scopeName": "source.dotenv.envis",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#assignments"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.dotenv",
+          "match": "^\\s*#.*$"
+        }
+      ]
+    },
+    "assignments": {
+      "patterns": [
+        {
+          "name": "meta.assignment.quoted.double.dotenv",
+          "match": "^\\s*(?:export\\s+)?([A-Za-z_][A-Za-z0-9_]*)(\\s*)(=)(\\s*)(\"(?:\\\\.|[^\"])*\")\\s*$",
+          "captures": {
+            "1": {
+              "name": "variable.other.constant.env-key.dotenv"
+            },
+            "3": {
+              "name": "keyword.operator.assignment.dotenv"
+            },
+            "5": {
+              "name": "string.quoted.double.dotenv"
+            }
+          }
+        },
+        {
+          "name": "meta.assignment.quoted.single.dotenv",
+          "match": "^\\s*(?:export\\s+)?([A-Za-z_][A-Za-z0-9_]*)(\\s*)(=)(\\s*)('(?:\\\\.|[^'])*')\\s*$",
+          "captures": {
+            "1": {
+              "name": "variable.other.constant.env-key.dotenv"
+            },
+            "3": {
+              "name": "keyword.operator.assignment.dotenv"
+            },
+            "5": {
+              "name": "string.quoted.single.dotenv"
+            }
+          }
+        },
+        {
+          "name": "meta.assignment.dotenv",
+          "match": "^\\s*(?:export\\s+)?([A-Za-z_][A-Za-z0-9_]*)(\\s*)(=)(\\s*)(.*)$",
+          "captures": {
+            "1": {
+              "name": "variable.other.constant.env-key.dotenv"
+            },
+            "3": {
+              "name": "keyword.operator.assignment.dotenv"
+            },
+            "5": {
+              "name": "string.unquoted.dotenv"
+            }
+          }
+        },
+        {
+          "name": "invalid.illegal.env-key.dotenv",
+          "match": "^\\s*(?:export\\s+)?([^=\\s#][^=]*?)(?=\\s*=)"
+        }
+      ]
+    }
+  }
+}
