@@ -96,3 +96,14 @@ npm run check
 ```
 
 `npm run check` runs TypeScript compilation and unit tests.
+
+## Packaging and publishing
+
+Use these commands to create and publish extension packages:
+
+```bash
+npm run package:vsix
+npm run publish:marketplace -- -p <VSCE_PAT>
+```
+
+For the full GitHub Actions release flow, see `docs/publishing.md`.

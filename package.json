@@ -3,7 +3,19 @@
   "displayName": "Envis",
   "description": "Validate .env files, sync keys with .env.example, and track env variable references.",
   "version": "0.1.0",
-  "publisher": "envis",
+  "publisher": "limbon2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/limbon2/envis"
+  },
+  "license": "MIT",
+  "keywords": [
+    "dotenv",
+    "env",
+    "environment",
+    "validation",
+    "vscode"
+  ],
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -11,13 +23,23 @@
     "Linters",
     "Other"
   ],
+  "files": [
+    "out/src/**/*",
+    "syntaxes/**/*",
+    "media/icon.png",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "package.json"
+  ],
   "activationEvents": [
     "onStartupFinished",
     "workspaceContains:**/.env",
     "workspaceContains:**/.env.example",
     "onLanguage:dotenv"
   ],
-  "main": "./out/src/extension.js",
+  "main": "out/src/extension.js",
+  "icon": "media/icon.png",
   "contributes": {
     "commands": [
       {
@@ -142,16 +164,17 @@
     "build": "tsc -p ./tsconfig.json",
     "watch": "tsc -watch -p ./tsconfig.json",
     "test": "mocha out/test/**/*.test.js",
-    "check": "npm run build && npm run test"
+    "check": "npm run build && npm run test",
+    "ci": "npm run check && npm run package:vsix",
+    "package:vsix": "npm run build && vsce package --no-dependencies",
+    "publish:marketplace": "npm run build && vsce publish --no-dependencies"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.13.10",
     "@types/vscode": "^1.95.0",
+    "@vscode/vsce": "^3.6.2",
     "mocha": "^11.1.0",
     "typescript": "^5.8.2"
-  },
-  "dependencies": {
-    "minimatch": "^10.0.1"
   }
 }

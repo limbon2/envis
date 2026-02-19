@@ -1,7 +1,7 @@
 import * as path from "node:path";
 import * as vscode from "vscode";
-import { minimatch } from "minimatch";
 import { DEFAULT_IGNORED_DIRECTORIES, ENV_FILE_PATTERN } from "./constants";
+import { matchesGlob } from "./globMatcher";
 export {
   getExpectedEnvBasename,
   getExpectedExampleBasename,
@@ -36,13 +36,7 @@ export function isExcludedByPattern(uri: vscode.Uri, patterns: string[]): boolea
   }
 
   const relative = vscode.workspace.asRelativePath(uri, false);
-  return patterns.some((pattern) =>
-    minimatch(relative, pattern, {
-      dot: true,
-      nocase: false,
-      windowsPathsNoEscape: true,
-    }),
-  );
+  return patterns.some((pattern) => matchesGlob(relative, pattern));
 }
 
 export function shouldSkipUri(uri: vscode.Uri, patterns: string[]): boolean {

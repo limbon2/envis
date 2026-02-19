@@ -1,6 +1,6 @@
 import { TextDecoder } from "node:util";
 import * as vscode from "vscode";
-import { minimatch } from "minimatch";
+import { matchesGlob } from "./globMatcher";
 import { extractReferenceMatchesFromText } from "./referencePatterns";
 import { EnvDocumentModel, EnvisSettings } from "./types";
 import { discoverReferenceUris } from "./workspaceScanner";
@@ -139,12 +139,6 @@ export class ReferenceEngine {
     }
 
     const relativePath = vscode.workspace.asRelativePath(uri, false);
-    return settings.referenceFileGlobs.some((glob) =>
-      minimatch(relativePath, glob, {
-        dot: true,
-        nocase: false,
-        windowsPathsNoEscape: true,
-      }),
-    );
+    return settings.referenceFileGlobs.some((glob) => matchesGlob(relativePath, glob));
   }
 }
