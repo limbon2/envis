@@ -1,3 +1,4 @@
+import * as path from "node:path";
 import * as vscode from "vscode";
 import { DIAGNOSTIC_CODES } from "./constants";
 import { EnvWorkspaceService } from "./envWorkspaceService";
@@ -11,8 +12,9 @@ function createMissingKeyCodeAction(
   data: MissingInEnvDiagnosticData,
   targetDocument: vscode.TextDocument,
 ): vscode.CodeAction {
+  const targetBasename = path.basename(targetDocument.uri.fsPath);
   const action = new vscode.CodeAction(
-    `Add "${data.key}" to .env`,
+    `Add "${data.key}" to ${targetBasename}`,
     vscode.CodeActionKind.QuickFix,
   );
   action.diagnostics = [diagnostic];

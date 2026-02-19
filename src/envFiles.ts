@@ -2,6 +2,12 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 import { minimatch } from "minimatch";
 import { DEFAULT_IGNORED_DIRECTORIES, ENV_FILE_PATTERN } from "./constants";
+export {
+  getExpectedEnvBasename,
+  getExpectedExampleBasename,
+  parseEnvBasename,
+  type EnvBasenameInfo,
+} from "./envBasename";
 
 export function isEnvBasename(name: string): boolean {
   return ENV_FILE_PATTERN.test(name);

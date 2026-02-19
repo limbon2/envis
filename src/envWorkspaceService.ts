@@ -3,7 +3,12 @@ import { TextDecoder } from "node:util";
 import * as vscode from "vscode";
 import { compareEnvKeySets } from "./comparison";
 import { DIAGNOSTIC_CODES, DIAGNOSTIC_SOURCE } from "./constants";
-import { isExampleBasename, isPrimaryEnvBasename, isEnvUri } from "./envFiles";
+import {
+  getExpectedExampleBasename,
+  getExpectedEnvBasename,
+  isEnvUri,
+  parseEnvBasename,
+} from "./envFiles";
 import { parseEnvText } from "./envParser";
 import { ReferenceEngine } from "./referenceEngine";
 import { getSettings, toDiagnosticSeverity } from "./settings";
@@ -215,14 +220,20 @@ export class EnvWorkspaceService implements vscode.Disposable {
 
       const existing = this.groupsByFolder.get(folder) ?? {
         folder,
-        others: [],
+        pairsByVariant: new Map(),
       };
-      if (isPrimaryEnvBasename(basename)) {
-        existing.env = model;
-      } else if (isExampleBasename(basename)) {
-        existing.example = model;
-      } else {
-        existing.others.push(model);
+
+      const info = parseEnvBasename(basename);
+      if (info) {
+        const pair = existing.pairsByVariant.get(info.variant) ?? {
+          variant: info.variant,
+        };
+        if (info.kind === "env") {
+          pair.env = model;
+        } else {
+          pair.example = model;
+        }
+        existing.pairsByVariant.set(info.variant, pair);
       }
       this.groupsByFolder.set(folder, existing);
     }
@@ -283,13 +294,14 @@ export class EnvWorkspaceService implements vscode.Disposable {
     }
 
     for (const group of this.groupsByFolder.values()) {
-      if (group.env && !group.example) {
+      const primaryPair = group.pairsByVariant.get("");
+      if (primaryPair?.env && !primaryPair.example) {
         const expectedExampleUri = vscode.Uri.file(
           path.join(group.folder, ".env.example"),
         );
         const diagnostic = new vscode.Diagnostic(
-          group.env.orderedEntries[0]
-            ? rangeForEntry(group.env.orderedEntries[0])
+          primaryPair.env.orderedEntries[0]
+            ? rangeForEntry(primaryPair.env.orderedEntries[0])
             : fallbackRange(),
           "Missing .env.example in this folder.",
           toDiagnosticSeverity(missingExampleSeverity),
@@ -297,48 +309,52 @@ export class EnvWorkspaceService implements vscode.Disposable {
         diagnostic.code = DIAGNOSTIC_CODES.missingExample;
         diagnostic.source = DIAGNOSTIC_SOURCE;
         const data: MissingExampleDiagnosticData = {
-          envUri: group.env.uri.toString(),
+          envUri: primaryPair.env.uri.toString(),
           exampleUri: expectedExampleUri.toString(),
-          keys: [...group.env.keySet].sort(),
+          keys: [...primaryPair.env.keySet].sort(),
         };
-        this.setDiagnosticData(group.env.uri.toString(), diagnostic, data);
-        setMapValue(diagnosticMap, group.env.uri.toString(), diagnostic);
+        this.setDiagnosticData(primaryPair.env.uri.toString(), diagnostic, data);
+        setMapValue(diagnosticMap, primaryPair.env.uri.toString(), diagnostic);
       }
 
-      if (!group.env || !group.example) {
-        continue;
-      }
+      for (const pair of group.pairsByVariant.values()) {
+        if (!pair.env || !pair.example) {
+          continue;
+        }
 
-      const diff = compareEnvKeySets(group.example.keySet, group.env.keySet);
+        const envBasename = getExpectedEnvBasename(pair.variant);
+        const exampleBasename = getExpectedExampleBasename(pair.variant);
+        const diff = compareEnvKeySets(pair.example.keySet, pair.env.keySet);
 
-      for (const key of diff.missingInEnv) {
-        const sourceEntry = group.example.entriesByKey.get(key)?.[0];
-        const diagnostic = new vscode.Diagnostic(
-          sourceEntry ? rangeForEntry(sourceEntry) : fallbackRange(),
-          `Key "${key}" exists in .env.example but is missing in .env.`,
-          toDiagnosticSeverity(missingKeySeverity),
-        );
-        diagnostic.code = DIAGNOSTIC_CODES.missingInEnv;
-        diagnostic.source = DIAGNOSTIC_SOURCE;
-        const data: MissingInEnvDiagnosticData = {
-          key,
-          targetEnvUri: group.env.uri.toString(),
-          sourceExampleUri: group.example.uri.toString(),
-        };
-        this.setDiagnosticData(group.example.uri.toString(), diagnostic, data);
-        setMapValue(diagnosticMap, group.example.uri.toString(), diagnostic);
-      }
+        for (const key of diff.missingInEnv) {
+          const sourceEntry = pair.example.entriesByKey.get(key)?.[0];
+          const diagnostic = new vscode.Diagnostic(
+            sourceEntry ? rangeForEntry(sourceEntry) : fallbackRange(),
+            `Key "${key}" exists in ${exampleBasename} but is missing in ${envBasename}.`,
+            toDiagnosticSeverity(missingKeySeverity),
+          );
+          diagnostic.code = DIAGNOSTIC_CODES.missingInEnv;
+          diagnostic.source = DIAGNOSTIC_SOURCE;
+          const data: MissingInEnvDiagnosticData = {
+            key,
+            targetEnvUri: pair.env.uri.toString(),
+            sourceExampleUri: pair.example.uri.toString(),
+          };
+          this.setDiagnosticData(pair.example.uri.toString(), diagnostic, data);
+          setMapValue(diagnosticMap, pair.example.uri.toString(), diagnostic);
+        }
 
-      for (const key of diff.extraInEnv) {
-        const sourceEntry = group.env.entriesByKey.get(key)?.[0];
-        const diagnostic = new vscode.Diagnostic(
-          sourceEntry ? rangeForEntry(sourceEntry) : fallbackRange(),
-          `Key "${key}" exists in .env but is not declared in .env.example.`,
-          toDiagnosticSeverity(extraKeySeverity),
-        );
-        diagnostic.code = DIAGNOSTIC_CODES.extraInEnv;
-        diagnostic.source = DIAGNOSTIC_SOURCE;
-        setMapValue(diagnosticMap, group.env.uri.toString(), diagnostic);
+        for (const key of diff.extraInEnv) {
+          const sourceEntry = pair.env.entriesByKey.get(key)?.[0];
+          const diagnostic = new vscode.Diagnostic(
+            sourceEntry ? rangeForEntry(sourceEntry) : fallbackRange(),
+            `Key "${key}" exists in ${envBasename} but is not declared in ${exampleBasename}.`,
+            toDiagnosticSeverity(extraKeySeverity),
+          );
+          diagnostic.code = DIAGNOSTIC_CODES.extraInEnv;
+          diagnostic.source = DIAGNOSTIC_SOURCE;
+          setMapValue(diagnosticMap, pair.env.uri.toString(), diagnostic);
+        }
       }
     }
 

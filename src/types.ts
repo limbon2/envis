@@ -44,11 +44,15 @@ export interface EnvDocumentModel extends ParsedEnvFile {
   keySet: Set<string>;
 }
 
-export interface EnvFolderGroup {
-  folder: string;
+export interface EnvVariantPair {
+  variant: string;
   env?: EnvDocumentModel;
   example?: EnvDocumentModel;
-  others: EnvDocumentModel[];
+}
+
+export interface EnvFolderGroup {
+  folder: string;
+  pairsByVariant: Map<string, EnvVariantPair>;
 }
 
 export interface MissingInEnvDiagnosticData {

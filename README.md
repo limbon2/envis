@@ -11,7 +11,7 @@ Envis scans your workspace recursively and checks `.env`, `.env.example`, and
 
 - Warns when `.env.example` is missing in a folder that has `.env`.
 - Warns when a file has duplicate keys.
-- Compares `.env` and `.env.example` keys and warns for:
+- Compares env/example pairs and warns for:
   - keys missing in `.env`
   - keys present only in `.env`
 - Offers quick fixes to:
@@ -19,6 +19,11 @@ Envis scans your workspace recursively and checks `.env`, `.env.example`, and
   - create `.env.example` from `.env` keys
 - Shows per-key CodeLens reference counts in env files.
 - Supports `Find All References` for env keys in env files.
+
+Envis compares both primary and variant pairs:
+
+- `.env` with `.env.example`
+- `.env.<variant>` with `.env.<variant>.example`
 
 ## Reference detection patterns
 
