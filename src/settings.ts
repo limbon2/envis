@@ -28,6 +28,10 @@ function asSeverity(value: unknown, fallback: SeveritySetting): SeveritySetting 
   return fallback;
 }
 
+function asBoolean(value: unknown, fallback: boolean): boolean {
+  return typeof value === "boolean" ? value : fallback;
+}
+
 export function getSettings(): EnvisSettings {
   const config = vscode.workspace.getConfiguration("envis");
   const diagnostics = config.get("diagnostics") ?? {};
@@ -57,6 +61,10 @@ export function getSettings(): EnvisSettings {
     referenceFileGlobs: asArray(
       config.get("references.fileGlobs"),
       DEFAULT_REFERENCE_FILE_GLOBS,
+    ),
+    showSiblingVariables: asBoolean(
+      config.get("references.showSiblingVariables"),
+      false,
     ),
   };
 }

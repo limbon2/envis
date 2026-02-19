@@ -19,6 +19,7 @@ Envis scans your workspace recursively and checks `.env`, `.env.example`, and
   - create `.env.example` from `.env` keys
 - Shows per-key CodeLens reference counts in env files.
 - Supports `Find All References` for env keys in env files.
+- Supports Ctrl/Cmd+Click from code to jump to env key definitions.
 - Adds syntax highlighting for env keys in `.env` and `.env.*` files.
 
 Envis compares both primary and variant pairs:
@@ -36,6 +37,18 @@ Envis uses heuristic scanning for references and detects:
 - `import.meta.env["KEY"]` and `import.meta.env['KEY']`
 - `${KEY}`
 - `env("KEY")` and `env('KEY')`
+
+By default, Envis hides matching declarations from sibling `.env*` files in
+reference lists. You can toggle this behavior with:
+
+- `Envis: Toggle Sibling Variables in References`
+
+For go-to-definition from code, Envis currently supports:
+
+- `process.env.KEY`
+- `process.env["KEY"]` and `process.env['KEY']`
+- `import.meta.env.KEY`
+- `import.meta.env["KEY"]` and `import.meta.env['KEY']`
 
 ## Configuration
 
@@ -58,6 +71,10 @@ Envis supports these settings:
 - `envis.references.fileGlobs`
   - Default:
     `["**/*.{js,jsx,ts,tsx,mjs,cjs,vue,svelte,astro,py,go,rb,php,java,cs,sh,yml,yaml,json,md}"]`
+- `envis.references.showSiblingVariables`
+  - Default: `false`
+  - When enabled, reference results include matching keys from sibling `.env*`
+    files.
 
 By default, Envis ignores these directories:
 `node_modules`, `.git`, `dist`, `build`, `out`, `.next`, `coverage`, `target`,
@@ -67,6 +84,7 @@ and `vendor`.
 
 - `Envis: Scan Workspace` (`envis.scanWorkspace`)
 - `Envis: Refresh References` (`envis.refreshReferences`)
+- `Envis: Toggle Sibling Variables in References` (`envis.toggleShowSiblingVariables`)
 
 ## Development
 

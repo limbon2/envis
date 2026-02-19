@@ -14,6 +14,6 @@ export class EnvReferenceProvider implements vscode.ReferenceProvider {
       return [];
     }
 
-    return this.service.getReferences(key, context.includeDeclaration);
+    return this.service.getReferences(key, context.includeDeclaration, document.uri);
   }
 }

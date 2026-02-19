@@ -174,8 +174,101 @@ export class EnvWorkspaceService implements vscode.Disposable {
     return this.referenceEngine.getUsageCount(key);
   }
 
-  public getReferences(key: string, includeDeclarations: boolean): vscode.Location[] {
-    return this.referenceEngine.getReferences(key, includeDeclarations);
+  public getReferences(
+    key: string,
+    includeDeclarations: boolean,
+    sourceUri?: vscode.Uri,
+  ): vscode.Location[] {
+    const references = this.referenceEngine.getReferences(key, includeDeclarations);
+    if (!includeDeclarations || this.settings.showSiblingVariables) {
+      return references;
+    }
+
+    if (!sourceUri || !isEnvUri(sourceUri)) {
+      return references;
+    }
+
+    const sourceUriKey = sourceUri.toString();
+    return references.filter(
+      (location) =>
+        !isEnvUri(location.uri) || location.uri.toString() === sourceUriKey,
+    );
+  }
+
+  public getDefinitionLocations(key: string, sourceUri?: vscode.Uri): vscode.Location[] {
+    type Candidate = {
+      location: vscode.Location;
+      score: number;
+      path: string;
+    };
+
+    const sourcePath = sourceUri?.fsPath;
+    const sourceWorkspaceFolder = sourceUri
+      ? vscode.workspace.getWorkspaceFolder(sourceUri)?.uri.fsPath
+      : undefined;
+
+    const candidates: Candidate[] = [];
+    for (const envFile of this.envByUri.values()) {
+      const entry = envFile.entriesByKey.get(key)?.[0];
+      if (!entry) {
+        continue;
+      }
+
+      const range = new vscode.Range(
+        entry.line,
+        entry.start,
+        entry.line,
+        entry.end,
+      );
+      let score = 0;
+
+      if (envFile.basename === ".env") {
+        score += 30;
+      } else if (envFile.basename === ".env.example") {
+        score += 28;
+      } else if (envFile.basename.endsWith(".example")) {
+        score += 24;
+      } else {
+        score += 22;
+      }
+
+      if (sourcePath) {
+        if (envFile.folder === path.dirname(sourcePath)) {
+          score += 200;
+        } else {
+          const prefix = envFile.folder.endsWith(path.sep)
+            ? envFile.folder
+            : `${envFile.folder}${path.sep}`;
+          if (sourcePath === envFile.folder || sourcePath.startsWith(prefix)) {
+            score += 120;
+            const relative = path.relative(envFile.folder, sourcePath);
+            if (relative && relative !== ".") {
+              const depth = relative.split(path.sep).length;
+              score += Math.max(0, 20 - depth);
+            }
+          }
+        }
+      }
+
+      const envWorkspaceFolder = vscode.workspace.getWorkspaceFolder(envFile.uri)?.uri.fsPath;
+      if (
+        sourceWorkspaceFolder &&
+        envWorkspaceFolder &&
+        sourceWorkspaceFolder === envWorkspaceFolder
+      ) {
+        score += 40;
+      }
+
+      candidates.push({
+        location: new vscode.Location(envFile.uri, range),
+        score,
+        path: envFile.uri.fsPath,
+      });
+    }
+
+    return candidates
+      .sort((left, right) => right.score - left.score || left.path.localeCompare(right.path))
+      .map((candidate) => candidate.location);
   }
 
   public getDiagnosticData<T>(

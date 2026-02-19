@@ -29,6 +29,10 @@
         "title": "Envis: Refresh References"
       },
       {
+        "command": "envis.toggleShowSiblingVariables",
+        "title": "Envis: Toggle Sibling Variables in References"
+      },
+      {
         "command": "envis.showReferencesForEnvKey",
         "title": "Envis: Show References for Env Key"
       }
@@ -103,6 +107,11 @@
           "items": {
             "type": "string"
           }
+        },
+        "envis.references.showSiblingVariables": {
+          "type": "boolean",
+          "description": "Show matching declarations from sibling .env files in reference results.",
+          "default": false
         }
       }
     },

@@ -13,6 +13,7 @@ export interface EnvisSettings {
     invalidKeySeverity: SeveritySetting;
   };
   referenceFileGlobs: string[];
+  showSiblingVariables: boolean;
 }
 
 export interface ParsedEnvKey {
