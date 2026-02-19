@@ -1,0 +1,138 @@
+{
+  "name": "envis",
+  "displayName": "Envis",
+  "description": "Validate .env files, sync keys with .env.example, and track env variable references.",
+  "version": "0.1.0",
+  "publisher": "envis",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "workspaceContains:**/.env",
+    "workspaceContains:**/.env.example",
+    "onLanguage:dotenv"
+  ],
+  "main": "./out/src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "envis.scanWorkspace",
+        "title": "Envis: Scan Workspace"
+      },
+      {
+        "command": "envis.refreshReferences",
+        "title": "Envis: Refresh References"
+      },
+      {
+        "command": "envis.showReferencesForEnvKey",
+        "title": "Envis: Show References for Env Key"
+      }
+    ],
+    "configuration": {
+      "title": "Envis",
+      "properties": {
+        "envis.scan.include": {
+          "type": "array",
+          "description": "Glob patterns used to discover env files.",
+          "default": [
+            "**/.env*"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "envis.scan.exclude": {
+          "type": "array",
+          "description": "Additional glob patterns excluded from env and reference scanning.",
+          "default": [],
+          "items": {
+            "type": "string"
+          }
+        },
+        "envis.diagnostics.missingExampleSeverity": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warning",
+            "information",
+            "hint"
+          ],
+          "default": "warning"
+        },
+        "envis.diagnostics.missingKeySeverity": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warning",
+            "information",
+            "hint"
+          ],
+          "default": "warning"
+        },
+        "envis.diagnostics.extraKeySeverity": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warning",
+            "information",
+            "hint"
+          ],
+          "default": "warning"
+        },
+        "envis.diagnostics.duplicateKeySeverity": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warning",
+            "information",
+            "hint"
+          ],
+          "default": "warning"
+        },
+        "envis.references.fileGlobs": {
+          "type": "array",
+          "description": "Glob patterns used when scanning for env variable references.",
+          "default": [
+            "**/*.{js,jsx,ts,tsx,mjs,cjs,vue,svelte,astro,py,go,rb,php,java,cs,sh,yml,yaml,json,md}"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "dotenv",
+        "aliases": [
+          "dotenv",
+          "env"
+        ],
+        "extensions": [
+          ".env"
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json",
+    "watch": "tsc -watch -p ./tsconfig.json",
+    "test": "mocha out/test/**/*.test.js",
+    "check": "npm run build && npm run test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.13.10",
+    "@types/vscode": "^1.95.0",
+    "mocha": "^11.1.0",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "minimatch": "^10.0.1"
+  }
+}
