@@ -3,7 +3,7 @@
   "displayName": "Envis",
   "description": "Validate .env files, sync keys with .env.example, and track env variable references.",
   "version": "0.1.0",
-  "publisher": "limbon2",
+  "publisher": "limbon",
   "repository": {
     "type": "git",
     "url": "https://github.com/limbon2/envis"
